@@ -7,14 +7,19 @@ module Icalendar
     class DateTime < Value
       include TimeWithZone
 
-      FORMAT = '%Y%m%dT%H%M%S'
+      FORMAT           = '%Y%m%dT%H%M%S'
+      DATE_ONLY_FORMAT = '%Y%m%d'
 
       def initialize(value, params = {})
         if value.is_a? String
           params['tzid'] = 'UTC' if value.end_with? 'Z'
 
           begin
-            parsed_date = ::DateTime.strptime(value, FORMAT)
+            if value =~ /T/
+              parsed_date = ::DateTime.strptime(value, FORMAT)
+            else
+              parsed_date = ::Date.strptime(value, DATE_ONLY_FORMAT)
+            end
           rescue ArgumentError => e
             raise ArgumentError.new("Failed to parse \"#{value}\" - #{e.message}")
           end
